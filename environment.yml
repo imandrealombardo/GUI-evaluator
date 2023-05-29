@@ -1,0 +1,31 @@
+name: eval
+channels:
+  - defaults
+dependencies:
+  - python=3.9.0
+  - ca-certificates=2023.01.10=hecd8cb5_0
+  - cycler=0.11.0
+  - kiwisolver=1.4.4
+  - libcxx=14.0.6=h9765a3e_0
+  - libffi=3.3=hb1e8313_2
+  - ncurses=6.4=hcec6c5f_0
+  - openssl=1.1.1t=hca72f7f_0
+  - pyparsing=3.0.9
+  - readline=8.2=hca72f7f_0
+  - six=1.16.0
+  - sqlite=3.41.2=h6c40b1e_0
+  - tk=8.6.12
+  - xz=5.4.2=h6c40b1e_0
+  - zlib=1.2.13=h4dc903c_0
+  - pip
+  - pip:
+    - pynput==1.7.6
+    - importlib-resources==5.12.0
+    - packaging==23.1
+    - fonttools==4.39.4
+    - pytz==2023.3
+    - pycocotools==2.0.6
+    - pillow==9.5.0
+    - pandas
+    - opencv-python
+    - wheel==0.38.4
