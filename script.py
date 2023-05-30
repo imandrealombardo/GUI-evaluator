@@ -14,12 +14,25 @@ import pandas as pd
 import argparse
 
 key_pressed = None
+valid_key_pressed = False
 
 def reverse_map_faces(face):
     # Function that maps the face name to the corresponding index
     # Mapping: 'front' -> 0, 'right' -> 1, 'back' -> 2, 'left' -> 3, 'top' -> 4, 'bottom' -> 5
     face_mapping = {'front': 0, 'right': 1, 'back': 2, 'left': 3, 'top': 4, 'bottom': 5}
     return face_mapping.get(face)
+
+def are_there_panoramas_left(image_dir, csv_path):
+    panorama_dirs = [os.path.join(image_dir, d) for d in os.listdir(image_dir) if os.path.isdir(os.path.join(image_dir, d))]
+    if os.path.exists(csv_path):
+        annotated_panoramas = set(pd.read_csv(csv_path)['pano_id'].values)
+        panorama_dirs = [d for d in panorama_dirs if os.path.basename(d) not in annotated_panoramas]
+    return panorama_dirs != []
+
+def wait_for_window(root):
+    root.wait_visibility()  # Wait until the window becomes visible
+    while root.winfo_width() <= 1 or root.winfo_height() <= 1:
+        root.update()  # Let Tkinter process events, this will update window size if it's been resized
 
 def split_filename(f):
     # Split the string into the panorama id with underscore and the rest
@@ -114,31 +127,32 @@ def load_images(directory):
                 print(f"Error loading image {filename}: {e}")
     return images
 
-def wait_for_key(e, root):
+def wait_for_key(e, root, task):
     global key_pressed  # We are using the global variable key_pressed
-    global task  # We are using the global variable task
+    global valid_key_pressed  # We are using the global variable valid_key_pressed
 
     if e == Key.esc:  # If escape key is pressed
         print('Escape pressed (key)')
         root.destroy()
+        return False
 
     try:
         if hasattr(e, 'char'):  # The event is a KeyCode
-            #print(f'Key pressed: {e.char}')
             key_pressed = e.char
 
         elif hasattr(e, 'vk'):  # The event is a Key
-            #print(f'Key pressed: {e.vk}')
-            # Uncomment if you want to also handle other keys
             key_pressed = e.vk
 
     except AttributeError:
         print('AttributeError')
-        pass
+        return True  # Keep listening
 
     if (task == 3 and key_pressed in ['1', '2', '3']) or \
        (task != 3 and key_pressed in ['1', '2']):
+        valid_key_pressed = True  # Set valid_key_pressed to True when a valid key is pressed
         return False  # Stop the listener
+
+    return True  # Keep listening if invalid key is pressed
 
 def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, window_title, csv_path):
     root.title(window_title)  # Set the window title
@@ -174,11 +188,6 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
         panorama_dirs = [d for d in panorama_dirs if os.path.basename(d) not in annotated_panoramas]
 
     #print(f'Panorama directories after filtering: {panorama_dirs}')
-
-    if panorama_dirs == []:
-        print('No panoramas left to annotate!')
-        root.destroy()
-        return
 
     # Count the total number of images (panoramas * faces)
     total_images = sum([len(os.listdir(d)) for d in panorama_dirs])
@@ -222,12 +231,6 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
                 # Check that the face has masks
                 if len(masks) == 0:
                     print(f'Face {face_idx} has no masks. Skipping...')
-                    '''# Add the panorama to the no masks file
-                    with open(f'no_masks.csv', 'a') as f:
-                        # Check if pano_id is already in pano_id column. If it's not, add it
-                        if pano_id not in pd.read_csv(f'no_masks.csv')['pano_id'].values:
-                            print(f'Adding {pano_id} to no_masks.csv')
-                            f.write(f'{pano_id}, {face_idx}\n')'''
 
                     continue
 
@@ -257,11 +260,19 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
                     
                     root.update()  # Update the window to make the image visible
 
-                    with Listener(on_press=lambda e: wait_for_key(e, root), suppress=True) as listener:  # Wait for a key press
-                        listener.join()  # Wait for the listener to stop
+                    global valid_key_pressed
+                    global key_pressed
+                    print(f'valid_key_pressed before entering the Listener while True loop: {valid_key_pressed}')
 
+                    while True:  # Wait until a valid key is pressed
+                        with Listener(on_press=lambda e: wait_for_key(e, root, task), suppress=True) as listener:  # Wait for a key press
+                            listener.join()  # Wait for the listener to stop
+
+                        if valid_key_pressed:  # Exit the loop if a valid key was pressed
+                            valid_key_pressed = False  # Reset valid_key_pressed to False for the next image
+                            break
                     user_choices[pano_id][face_idx].append((key_pressed, model_dir_mapping[model_dir]))  # Record the user's choice
-
+                    key_pressed = None # Reset key_pressed for the next image
                     label.pack_forget()  # Hide the current image
 
             # Update the progress bar after each image
@@ -289,25 +300,11 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
     user_choices.clear()
 
     # After all images have been displayed, show a final pop-up message
+    counter_label['text'] = ""  # Clear the label
     messagebox.showinfo("Notification", "Task completed. Thanks for your time :)")
-    # Destroy the progress bar
-    progress.destroy()
+    progress.destroy()  # Destroy the progress bar
 
     root.destroy()  # Close the script when OK is pressed
-
-    '''# Write the user's choices to a .csv file
-    with open(f'task_{task}_results.csv', 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(["pano_id", "face_idx", "choices", "model"])  # Write header
-        for pano_id, face_choices in user_choices.items():
-            for face_idx, model_choices in face_choices.items():
-                # Group choices by model
-                choices_by_model = defaultdict(list)
-                for choice, model in model_choices:
-                    choices_by_model[model].append(choice)
-                # Write grouped choices to .csv
-                for model, choices in choices_by_model.items():
-                    writer.writerow([pano_id, face_idx, ','.join(choices), model])'''
 
 def main(args):
     root = Tk()
@@ -393,7 +390,12 @@ def main(args):
             writer = csv.writer(csvfile)
             writer.writerow(["pano_id", "face_idx"])'''
 
-    show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, task_text, csv_path)
+    if not are_there_panoramas_left(image_dir, csv_path):
+        print('No panoramas left to annotate!')
+        root.destroy()
+    else:
+        wait_for_window(root)  # Wait for the window to be ready
+        show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, task_text, csv_path)
 
     root.mainloop()
 
