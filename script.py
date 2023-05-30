@@ -169,8 +169,8 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
 
     # Filter already annotated panoramas by checking if the panorama directory name
     # is in the .csv file. The name will be the same as the pano_id cell.
-    if os.path.exists(f'task_{task}_results.csv'):
-        annotated_panoramas = set(pd.read_csv(f'task_{task}_results.csv')['pano_id'].values)
+    if os.path.exists(csv_path):
+        annotated_panoramas = set(pd.read_csv(csv_path)['pano_id'].values)
         panorama_dirs = [d for d in panorama_dirs if os.path.basename(d) not in annotated_panoramas]
 
     #print(f'Panorama directories after filtering: {panorama_dirs}')
@@ -246,7 +246,7 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
 
                     # Resize the image to fit the window
                     #overlay_img = resize_image(overlay_img, root.winfo_width(), root.winfo_height())
-                    root.after(100, lambda: resize_image(img, root.winfo_width(), root.winfo_height()))
+                    root.after(1000, lambda: resize_image(img, root.winfo_width(), root.winfo_height()))
 
                     # Convert the processed image to a PhotoImage and display it
                     image = ImageTk.PhotoImage(overlay_img)
