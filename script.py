@@ -246,7 +246,7 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
 
                     # Resize the image to fit the window
                     #overlay_img = resize_image(overlay_img, root.winfo_width(), root.winfo_height())
-                    root.after(1000, lambda: resize_image(overlay_img, root.winfo_width(), root.winfo_height()))
+                    root.after(100, lambda: resize_image(overlay_img, root.winfo_width(), root.winfo_height()))
 
                     # Convert the processed image to a PhotoImage and display it
                     image = ImageTk.PhotoImage(overlay_img)
@@ -364,7 +364,10 @@ def main(args):
         model_masks[model_dir] = grouped_panos
 
     root.deiconify()  # Show the main window again
-    root.attributes('-fullscreen', True)  # Set the root to fullscn
+    if args.os == 'macOS':
+        root.attributes('-fullscreen', True)  # Set the root to fullscreen
+    else:
+        root.attributes('-zoomed', True) # Set the root to fullscreen
 
     model_dir_mapping = {}
     for model_dir in model_dirs:
@@ -404,6 +407,7 @@ if __name__ == '__main__':
     parser.add_argument('--model1', type=str, default='baseline', help='first model to evaluate')
     parser.add_argument('--model2', type=str, default='algorithm1', help='second model to evaluate')
     parser.add_argument('--model3', type=str, default='algorithm2', help='third model to evaluate')
+    parser.add_argument('--os', type=str, default='macOS', help='OS used for the evaluation')
 
     args = parser.parse_args()
 
