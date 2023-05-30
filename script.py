@@ -140,7 +140,7 @@ def wait_for_key(e, root):
        (task != 3 and key_pressed in ['1', '2']):
         return False  # Stop the listener
 
-def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, window_title):
+def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, window_title, csv_path):
     root.title(window_title)  # Set the window title
 
     # Make the grid cells expand to fill the available space
@@ -272,7 +272,7 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
                 messagebox.showinfo("Notification", "Great job, you are halfway through! Please click OK to continue.")
 
         # Write the user's choices to a .csv file after each panorama_dir
-        with open(f'task_{task}_results.csv', 'a', newline='') as csvfile:
+        with open(csv_path, 'a', newline='') as csvfile:
             writer = csv.writer(csvfile)
             # writer.writerow(["pano_id", "face_idx", "choices", "model"])  # Write header
             for pano_id, face_choices in user_choices.items():
@@ -325,12 +325,13 @@ def main(args):
     task_text = [k for k, v in task_mapping.items() if v == task][0]
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    data_dir = args.data_dir
     # Get a list of all model directories, skip any non-directory files
-    model1 = os.path.join(script_dir, args.model1)
-    model2 = os.path.join(script_dir, args.model2)
-    model3 = os.path.join(script_dir, args.model3)
+    model1 = os.path.join(script_dir, data_dir, args.model1)
+    model2 = os.path.join(script_dir, data_dir, args.model2)
+    model3 = os.path.join(script_dir, data_dir, args.model3)
     model_dirs = [model1, model2, model3]
-    image_dir = os.path.join(script_dir, args.images_dir)
+    image_dir = os.path.join(script_dir, data_dir, args.images_dir)
 
     # Create a set of all panorama ids, filter out non-directory files
     #panorama_ids = {os.path.splitext(f)[0] for d in os.listdir(image_dir) if os.path.isdir(os.path.join(script_dir, d)) for f in os.listdir(os.path.join(image_dir, d)) if f.endswith('.png')}
@@ -377,8 +378,9 @@ def main(args):
             model_dir_mapping[model_dir] = 3  # Or any other default value you'd like
 
     # If it's the first time running the script for a task, create a new .csv file
-    if not os.path.exists(f'task_{task}_results.csv'):
-        with open(f'task_{task}_results.csv', 'w', newline='') as csvfile:
+    csv_path = os.path.join(data_dir, f'task_{task}_results.csv')
+    if not os.path.exists(csv_path):
+        with open(csv_path, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["pano_id", "face_idx", "choices", "model"]) # Write header
 
@@ -388,7 +390,7 @@ def main(args):
             writer = csv.writer(csvfile)
             writer.writerow(["pano_id", "face_idx"])'''
 
-    show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, task_text)
+    show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mapping, task_text, csv_path)
 
     root.mainloop()
 
@@ -396,6 +398,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--data_dir', type=str, default='data', help='data directory')
     parser.add_argument('--images_dir', type=str, default='dataset', help='images directory')
     parser.add_argument('--masks_json', type=str, default='input_coco_format_100.json', help='masks json file')
     parser.add_argument('--model1', type=str, default='baseline', help='first model to evaluate')
