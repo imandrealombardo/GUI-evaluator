@@ -361,10 +361,10 @@ def main(args):
         model_masks[model_dir] = grouped_panos
 
     root.deiconify()  # Show the main window again
-    if args.os == 'macOS':
-        root.attributes('-fullscreen', True)  # Set the root to fullscreen
+    if args.os == 'linux':
+        root.attributes('-zoomed', True)  # Set the root to fullscreen
     else:
-        root.attributes('-zoomed', True) # Set the root to fullscreen
+        root.attributes('-fullscreen', True) # Set the root to fullscreen
 
     model_dir_mapping = {}
     for model_dir in model_dirs:

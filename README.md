@@ -18,5 +18,9 @@ This repository contains code for a GUI Evaluator. Follow the instructions below
 ## Run the Script
 1. ```python script.py```
 
+## FAQ
+1. **How do I fix small images?**
+    It may be an OS issue. If you are using Linux, try to run the script with ```python script.py --os linux```.
+
 ## Slides
 Please refer to the slides [here](https://docs.google.com/presentation/d/1U6zvjCMLU699rcoXMFr40sbAg43YK6u--ASztKnw-28/edit?usp=sharing) for more information about the evaluation task.
