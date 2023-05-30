@@ -245,7 +245,8 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
                     overlay_img = Image.fromarray(cv2.addWeighted(np.array(img), 0.7, output_mask, 0.6, 0))
 
                     # Resize the image to fit the window
-                    overlay_img = resize_image(overlay_img, root.winfo_width(), root.winfo_height())
+                    #overlay_img = resize_image(overlay_img, root.winfo_width(), root.winfo_height())
+                    root.after(100, lambda: resize_image(img, root.winfo_width(), root.winfo_height()))
 
                     # Convert the processed image to a PhotoImage and display it
                     image = ImageTk.PhotoImage(overlay_img)
