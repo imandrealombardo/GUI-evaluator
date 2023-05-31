@@ -296,8 +296,8 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
                     for model, choices in choices_by_model.items():
                         writer.writerow([pano_id, face_idx, ','.join(choices), model])
 
-    # Clear the choices for the current panorama_dir
-    user_choices.clear()
+        # Clear the choices for the current panorama_dir
+        user_choices.clear()
 
     # After all images have been displayed, show a final pop-up message
     counter_label['text'] = ""  # Clear the label
