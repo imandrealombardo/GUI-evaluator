@@ -12,7 +12,7 @@ This repository contains code for a GUI Evaluator. Follow the instructions below
 3. ```pip install -r requirements.txt```
 
 ## Download the Dataset
-1. Download the dataset from [here](https://we.tl/t-rtPFVM4THL).
+1. Download the dataset from [here](https://we.tl/t-Sz9OKPZ6S8).
 2. Unzip the 'data' folder in the root of the repository.
 
 ## Run the Script
