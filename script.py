@@ -248,8 +248,8 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
                     overlay_img = Image.fromarray(cv2.addWeighted(np.array(img), 0.7, output_mask, 0.6, 0))
 
                     # Resize the image to fit the window
-                    #overlay_img = resize_image(overlay_img, root.winfo_width(), root.winfo_height())
-                    root.after(100, lambda: resize_image(overlay_img, root.winfo_width(), root.winfo_height()))
+                    overlay_img = resize_image(overlay_img, root.winfo_width()-100, root.winfo_height()-100)
+                    #root.after(100, lambda: resize_image(overlay_img, root.winfo_width()-150, root.winfo_height()-150))
 
                     # Convert the processed image to a PhotoImage and display it
                     image = ImageTk.PhotoImage(overlay_img)
@@ -308,6 +308,7 @@ def show_images(root, model_dirs, image_dir, model_masks, task, model_dir_mappin
 
 def main(args):
     root = Tk()
+    root.resizable(True, True)
     root.withdraw()  # Hide the main window when the script starts
 
     global task  # Make the task variable global to access it in the wait_for_key function
